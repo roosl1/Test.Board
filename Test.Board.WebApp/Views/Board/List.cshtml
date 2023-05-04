@@ -1,0 +1,27 @@
+﻿<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>번호</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>작성일</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var board in Model)
+        {
+            <tr>
+                <td>@board.Number</td>
+                <td>
+                    <a asp-controller="Board" asp-action="Detail" asp-route-No="@board.Number">@board.Title</a>
+                </td>
+                <td>@board.Writer</td>
+                <td>@board.Date</td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+<div align="right"><a class="btn btn-danger" asp-controller="Board" asp-action="Write">작성</a></div>
