@@ -1,0 +1,20 @@
+﻿@model Test.Board.WebApp.Models.GeneralBoard
+
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>@Model.Title</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@Model.Contents</td>
+            </tr>
+        </tbody>
+    </table>
+    <div align="right">
+        <a class="btn btn-primary" asp-controller="Board" asp-action="Edit" asp-route-No="@Model.Number">수정</a>
+        <a class="btn btn-primary" asp-controller="Board" asp-action="List">목록</a>
+    </div>
+</div>

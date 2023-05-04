@@ -1,0 +1,73 @@
+﻿@model Test.Board.WebApp.Models.GeneralBoard
+
+<div class="row">
+    <div class="col-lg-2"> </div>
+    <div class="col-lg-8">
+        <div class="text-danger" asp-validation-summary="ModelOnly"> </div>
+
+        <div class="form-group">
+            <label>작성자</label>
+            <input class="form-control" asp-for="Writer" placeholder="작성자 입력" value=@Model.Writer id="writer" />
+            <span class="text-danger" asp-validation-for="Writer"></span>
+        </div>
+
+        <div class="form-group">
+            <label>제목</label>
+            <input class="form-control" asp-for="Title" placeholder="제목 입력" value=@Model.Title id="title" />
+            <span class="text-danger" asp-validation-for="Title"></span>
+        </div>
+
+        <div class="form-group">
+            <textarea class="form-control editor" rows="20" asp-for="Contents" placeholder="내용 입력" id="contents">@Html.Raw(Model.Contents)</textarea>
+            <span class="text-danger" asp-validation-for="Contents"></span>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" id="actionEdit">등록</button>
+            <a class="btn btn-default" asp-controller="Board" asp-action="List">취소</a>
+        </div>
+    </div>
+    <div class="col-lg-2"> </div>
+
+    @*hidden value *@
+    <input type="hidden" id="number" value="@Model.Number" />
+</div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+<script>
+
+    $(function () {
+        $('#actionEdit').on('click', function () {
+            let number = $('#number').val();
+            let writer = $('#writer').val();
+            let title = $('#title').val();
+            let contents = $('#contents').val();
+            let currentLocation = location.protocol + '//' + location.host;
+
+            $.ajax({
+                //url: location.href + '/Board/Edit/' + number,
+                url: currentLocation + '/Board/Edit/',
+                data: {
+                    'number': number,
+                    'writer': writer,
+                    'title': title,
+                    'contents': contents
+                },
+                type: 'POST',
+                success: function (data) {
+                    debugger;
+                    if (data.result == 0) {
+                        location.href = currentLocation + '/Board/Detail?No=' + number;
+                    }
+                    else {
+                        alert('update fail');
+                    }
+                },
+                error: function (error) {
+                    alert(error.status);
+                }
+            });
+        });
+    });
+</script>

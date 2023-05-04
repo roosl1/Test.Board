@@ -18,7 +18,7 @@ namespace Test.Board.WebApp.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult List()
         {
             return View();
         }
