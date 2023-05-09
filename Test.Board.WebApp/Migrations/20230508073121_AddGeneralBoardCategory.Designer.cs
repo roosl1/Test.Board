@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Test.Board.WebApp.DataContext;
 
@@ -11,9 +12,11 @@ using Test.Board.WebApp.DataContext;
 namespace Test.Board.WebApp.Migrations
 {
     [DbContext(typeof(BoardDbContext))]
-    partial class BoardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230508073121_AddGeneralBoardCategory")]
+    partial class AddGeneralBoardCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,7 +71,7 @@ namespace Test.Board.WebApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BoardCategories");
+                    b.ToTable("GeneralBoardCategory");
 
                     b.HasData(
                         new

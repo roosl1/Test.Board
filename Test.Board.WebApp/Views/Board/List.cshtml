@@ -1,7 +1,12 @@
-﻿<table class="table table-bordered">
+﻿<div>
+    @Html.DropDownList("ddlCategories", new SelectList((IEnumerable<SelectListItem>)ViewData["GeneralBoardCategories"], "Value", "Text", ViewData["SelectedCategory"]), "ALL")
+</div>
+
+<table class="table table-bordered">
     <thead>
         <tr>
             <th>번호</th>
+            <th>카테고리</th>
             <th>제목</th>
             <th>작성자</th>
             <th>작성일</th>
@@ -13,6 +18,7 @@
         {
             <tr>
                 <td>@board.Number</td>
+                <td>@board.Category</td>
                 <td>
                     <a asp-controller="Board" asp-action="Detail" asp-route-No="@board.Number">@board.Title</a>
                 </td>
@@ -25,3 +31,16 @@
 </table>
 
 <div align="right"><a class="btn btn-danger" asp-controller="Board" asp-action="Write">작성</a></div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+<script>
+    $(function(){
+        $('#ddlCategories').on('change', function(){
+            let selectedValue = $('#ddlCategories').find('option:selected').val();
+            let currentLocation = location.protocol + '//' + location.host;
+
+            location.href = currentLocation + '/Board/List?CategoryId=' + selectedValue;
+        });
+    });
+</script>

@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using Test.Board.WebApp.DataContext;
 using Test.Board.WebApp.Models;
 
@@ -10,13 +13,33 @@ namespace Test.Board.WebApp.Controllers
         /// 게시판 리스트
         /// </summary>
         /// <returns></returns>
-        public IActionResult List()
+        public IActionResult List(int? CategoryId)
         {
+            var list = new List<GeneralBoard>();
+
             using (var db = new BoardDbContext())
             {
-                var list = db.Boards.ToList();
-                return View(list);
+
+                if (CategoryId == null)
+                {
+                    list = db.Boards.ToList();
+                }
+                else
+                {
+                    var category = db.BoardCategories.Find(CategoryId);
+                    var categoryName = category.Name;
+
+                    if (categoryName.Equals("ALL"))
+                        list = db.Boards.ToList();
+                    else
+                        list = db.Boards.Where(x => x.Category.Equals(categoryName)).ToList();
+
+                    ViewData["SelectedCategory"] = CategoryId;
+                }
+                var categories = new SelectList(db.BoardCategories.ToList(), "Id", "Name");
+                ViewData["GeneralBoardCategories"] = categories;
             }
+            return View(list);
         }
 
         /// <summary>
@@ -25,6 +48,11 @@ namespace Test.Board.WebApp.Controllers
         /// <returns></returns>
         public IActionResult Write()
         {
+            using (var db = new BoardDbContext())
+            {
+                var categories = new SelectList(db.BoardCategories.ToList(), "Id", "Name");
+                ViewData["GeneralBoardCategories"] = categories;
+            }
             return View();
         }
 
@@ -40,14 +68,22 @@ namespace Test.Board.WebApp.Controllers
             {
                 using (var db = new BoardDbContext())
                 {
+                    var category = db.BoardCategories.Find(Convert.ToInt32(model.Category));
+                    var categoryName = category.Name;
+
+                    model.Category = categoryName;
                     db.Boards.Add(model);
 
                     if (db.SaveChanges() > 0)
-                    {
                         return Redirect("List");
-                    }
-
-                    ModelState.AddModelError(string.Empty, "게시글을 저장할 수 없습니다");
+                }
+            }
+            else
+            {
+                using (var db = new BoardDbContext())
+                {
+                    var categories = new SelectList(db.BoardCategories.ToList(), "Id", "Name");
+                    ViewData["GeneralBoardCategories"] = categories;
                 }
             }
             return View(model);
@@ -76,12 +112,19 @@ namespace Test.Board.WebApp.Controllers
             using (var db = new BoardDbContext())
             {
                 var board = db.Boards.FirstOrDefault(n => n.Number.Equals(No));
+
+                var category = db.BoardCategories.SingleOrDefault(n => n.Name.Equals(board.Category));
+                ViewBag.CategoryId = category.Id;
+
+                var categories = new SelectList(db.BoardCategories.ToList(), "Id", "Name");
+                ViewData["GeneralBoardCategories"] = categories;
+
                 return View(board);
             }
         }
 
         [HttpPost]
-        public IActionResult Edit(int number, string writer, string title, string contents)
+        public IActionResult Edit(int number, string writer, string title, string contents, int categoryId)
         {
             GeneralBoard board = new GeneralBoard();
             if (ModelState.IsValid)
@@ -89,18 +132,50 @@ namespace Test.Board.WebApp.Controllers
                 using (var db = new BoardDbContext())
                 {
                     var updateBoard = db.Boards.FirstOrDefault(n => n.Number.Equals(number));
+                    var category = db.BoardCategories.Find(categoryId);
+                    var categoryName = category.Name;
 
+                    updateBoard.Category = categoryName;
                     updateBoard.Writer = writer;
                     updateBoard.Title = title;
                     updateBoard.Contents = contents;
 
-                    if (db.SaveChanges() > 0)
-                    {
-                        return Json(new { result = 0 });
-                    }
+                    db.SaveChanges();
+                    
+                    return Json(new { result = 0 });
                 }
             }
+            else
+            {
+                using (var db = new BoardDbContext())
+                {
+                    var categories = new SelectList(db.BoardCategories.ToList(), "Id", "Name");
+                    ViewData["GeneralBoardCategories"] = categories;
+                }
+                if (categoryId == 0)
+                    return Json(new { result = -1, msg = "카테고리를 선택해주세요." });
+            }
             return View(board);
+        }
+
+        /// <summary>
+        /// 게시글 삭제
+        /// </summary>
+        /// <param name="No"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult Delete(int number)
+        {
+            using (var db = new BoardDbContext())
+            {
+                var board = db.Boards.FirstOrDefault(n => n.Number.Equals(number));
+                db.Boards.Remove(board);
+                if (db.SaveChanges() > 0)
+                    return Json(new { result = 0 });
+                else
+                    return View(board);
+            }
+
         }
     }
 }
