@@ -32,15 +32,15 @@ namespace Test.Board.WebApp.Migrations
                     table.PrimaryKey("PK_GeneralBoardCategory", x => x.Id);
                 });
 
-            migrationBuilder.InsertData(
-                table: "GeneralBoardCategory",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { 1, "유머" },
-                    { 2, "지식" },
-                    { 3, "기타" }
-                });
+            //migrationBuilder.InsertData(
+            //    table: "GeneralBoardCategory",
+            //    columns: new[] { "Id", "Name" },
+            //    values: new object[,]
+            //    {
+            //        { 1, "유머" },
+            //        { 2, "지식" },
+            //        { 3, "기타" }
+            //    });
         }
 
         /// <inheritdoc />

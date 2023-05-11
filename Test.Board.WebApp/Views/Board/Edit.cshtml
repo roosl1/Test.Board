@@ -1,4 +1,4 @@
-﻿@model Test.Board.WebApp.Models.GeneralBoard
+﻿@model Test.Board.WebApp.Models.GeneralBoardDto
 
 <div class="row">
     <div class="col-lg-2"> </div>
@@ -7,10 +7,10 @@
 
         <div class="form-group">
             <label>카테고리</label>
-            <select asp-for="Category" asp-items="@(ViewData["GeneralBoardCategories"] as SelectList)">
+            <select asp-for="CategoryId" asp-items="@Model.selectListItems">
                 <option value="">ALL</option>
             </select>
-            <span class="text-danger" asp-validation-for="Category"></span>
+            <span class="text-danger" asp-validation-for="CategoryId"></span>
         </div>
 
         <div class="form-group">
@@ -46,15 +46,15 @@
 <script>
 
     $(function () {
-        var categoryId = @ViewBag.CategoryId;
-        $("#Category").val(categoryId);
+        var categoryId = @Model.SelectedItem;
+        $("#CategoryId").val(categoryId);
 
         $('#actionEdit').on('click', function () {
             let number = $('#number').val();
             let writer = $('#writer').val();
             let title = $('#title').val();
             let contents = $('#contents').val();
-            let categoryId = $('#Category').find('option:selected').val();
+            let categoryId = $('#CategoryId').find('option:selected').val();
             let currentLocation = location.protocol + '//' + location.host;
 
             $.ajax({
@@ -72,7 +72,7 @@
                         location.href = currentLocation + '/Board/Detail?No=' + number;
                     }
                     else if(data.result == -1) {
-                        $("span[data-valmsg-for='Category']").text(data.msg);
+                        $("span[data-valmsg-for='CategoryId']").text(data.msg);
                     }
                     else{
                         alert("update fail");

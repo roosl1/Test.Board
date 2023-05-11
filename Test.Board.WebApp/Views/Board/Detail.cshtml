@@ -1,10 +1,10 @@
-﻿@model Test.Board.WebApp.Models.GeneralBoard
+﻿@model Test.Board.WebApp.Models.GeneralBoardDto
 
 <div class="container">
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>[@Model.Category] - @Model.Title</th>
+                <th>[@Model.CategoryName] - @Model.Title</th>
             </tr>
         </thead>
         <tbody>
@@ -41,7 +41,7 @@
                     success: function (data) {
                         debugger;
                         if (data.result == 0) {
-                            location.href = currentLocation + '/Board/List?No=' + number;
+                            location.href = currentLocation + '/Board/List';
                         }
                         else {
                             alert('delete fail');

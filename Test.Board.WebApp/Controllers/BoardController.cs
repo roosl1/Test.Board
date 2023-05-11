@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using Test.Board.WebApp.DataContext;
 using Test.Board.WebApp.Models;
 
@@ -15,31 +13,29 @@ namespace Test.Board.WebApp.Controllers
         /// <returns></returns>
         public IActionResult List(int? CategoryId)
         {
-            var list = new List<GeneralBoard>();
-
             using (var db = new BoardDbContext())
             {
+                var categories = db.BoardCategories;
+                    
+                var boards = from board in db.Boards
+                           join category in db.BoardCategories
+                           on board.CategoryId equals category.Id
+                           select board;
 
-                if (CategoryId == null)
+                var boardDto = new GeneralBoardDto
                 {
-                    list = db.Boards.ToList();
-                }
-                else
+                    generalBoards = boards.ToList(),
+                    Categories = new SelectList(categories.ToList(), "Id", "Name") 
+                };
+
+                if(CategoryId != null)
                 {
-                    var category = db.BoardCategories.Find(CategoryId);
-                    var categoryName = category.Name;
-
-                    if (categoryName.Equals("ALL"))
-                        list = db.Boards.ToList();
-                    else
-                        list = db.Boards.Where(x => x.Category.Equals(categoryName)).ToList();
-
-                    ViewData["SelectedCategory"] = CategoryId;
+                    boardDto.generalBoards = boardDto.generalBoards.Where(x => x.CategoryId == CategoryId).ToList();
+                    boardDto.SelectedItem = CategoryId;
                 }
-                var categories = new SelectList(db.BoardCategories.ToList(), "Id", "Name");
-                ViewData["GeneralBoardCategories"] = categories;
+
+                return View(boardDto);
             }
-            return View(list);
         }
 
         /// <summary>
@@ -68,10 +64,9 @@ namespace Test.Board.WebApp.Controllers
             {
                 using (var db = new BoardDbContext())
                 {
-                    var category = db.BoardCategories.Find(Convert.ToInt32(model.Category));
-                    var categoryName = category.Name;
+                    var categoryName = (from category in db.BoardCategories where category.Id == model.CategoryId select category.Name).FirstOrDefault();
+                    model.CategoryName = categoryName;
 
-                    model.Category = categoryName;
                     db.Boards.Add(model);
 
                     if (db.SaveChanges() > 0)
@@ -97,8 +92,25 @@ namespace Test.Board.WebApp.Controllers
         {
             using (var db = new BoardDbContext())
             {
-                var board = db.Boards.FirstOrDefault(n => n.Number.Equals(No));
-                return View(board);
+                var boards = (
+                    from board in db.Boards
+                    join category in db.BoardCategories
+                    on board.CategoryId equals category.Id
+                    where board.Number == No
+                    select board).FirstOrDefault();
+
+                var boardDto = new GeneralBoardDto
+                {
+                    Number = boards.Number,
+                    Title = boards.Title,
+                    Contents = boards.Contents,
+                    Writer = boards.Writer,
+                    Date = boards.Date,
+                    CategoryId = boards.CategoryId,
+                    CategoryName = boards.CategoryName
+                };
+
+                return View(boardDto);
             }
         }
 
@@ -111,51 +123,70 @@ namespace Test.Board.WebApp.Controllers
         {
             using (var db = new BoardDbContext())
             {
-                var board = db.Boards.FirstOrDefault(n => n.Number.Equals(No));
+                var categories = db.BoardCategories
+                    .ToList()
+                    .Select(x => new SelectListItem 
+                    { 
+                        Value = Convert.ToString(x.Id),
+                        Text= x.Name
+                    });
 
-                var category = db.BoardCategories.SingleOrDefault(n => n.Name.Equals(board.Category));
-                ViewBag.CategoryId = category.Id;
+                var boards = (
+                    from board in db.Boards
+                    join category in db.BoardCategories
+                    on board.CategoryId equals category.Id
+                    where board.Number == No
+                    select board).FirstOrDefault();
 
-                var categories = new SelectList(db.BoardCategories.ToList(), "Id", "Name");
-                ViewData["GeneralBoardCategories"] = categories;
+                var boardDto = new GeneralBoardDto
+                {
+                    Number = boards.Number,
+                    Title = boards.Title,
+                    Contents = boards.Contents,
+                    Writer = boards.Writer,
+                    Date = boards.Date,
+                    CategoryId = boards.CategoryId,
+                    CategoryName = boards.CategoryName,
+                    SelectedItem = boards.CategoryId,
+                    selectListItems = categories.ToList()
+                };
 
-                return View(board);
+                return View(boardDto);
             }
         }
 
         [HttpPost]
         public IActionResult Edit(int number, string writer, string title, string contents, int categoryId)
         {
-            GeneralBoard board = new GeneralBoard();
-            if (ModelState.IsValid)
+            using (var db = new BoardDbContext())
             {
-                using (var db = new BoardDbContext())
-                {
-                    var updateBoard = db.Boards.FirstOrDefault(n => n.Number.Equals(number));
-                    var category = db.BoardCategories.Find(categoryId);
-                    var categoryName = category.Name;
+                var board = new GeneralBoard();
 
-                    updateBoard.Category = categoryName;
-                    updateBoard.Writer = writer;
-                    updateBoard.Title = title;
-                    updateBoard.Contents = contents;
+                var categoryName = (from category in db.BoardCategories where category.Id == categoryId select category.Name).FirstOrDefault();
 
-                    db.SaveChanges();
-                    
-                    return Json(new { result = 0 });
-                }
-            }
-            else
-            {
-                using (var db = new BoardDbContext())
+                if (ModelState.IsValid)
                 {
-                    var categories = new SelectList(db.BoardCategories.ToList(), "Id", "Name");
-                    ViewData["GeneralBoardCategories"] = categories;
+                    var recordToUpdate = db.Boards.FirstOrDefault(x => x.Number.Equals(number));
+                    if (recordToUpdate != null)
+                    {
+                        recordToUpdate.Writer = writer;
+                        recordToUpdate.Title = title;
+                        recordToUpdate.Contents = contents;
+                        recordToUpdate.CategoryId = categoryId;
+                        recordToUpdate.CategoryName = categoryName;
+
+                        db.SaveChanges();
+
+                        return Json(new { result = 0 });
+                    }
                 }
-                if (categoryId == 0)
-                    return Json(new { result = -1, msg = "카테고리를 선택해주세요." });
+                else
+                {
+                    if (categoryId == 0)
+                        return Json(new { result = -1, msg = "카테고리를 선택해주세요." });
+                }
+                return View(board);
             }
-            return View(board);
         }
 
         /// <summary>
@@ -170,10 +201,11 @@ namespace Test.Board.WebApp.Controllers
             {
                 var board = db.Boards.FirstOrDefault(n => n.Number.Equals(number));
                 db.Boards.Remove(board);
+
                 if (db.SaveChanges() > 0)
                     return Json(new { result = 0 });
                 else
-                    return View(board);
+                    return View();
             }
 
         }

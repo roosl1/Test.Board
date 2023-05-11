@@ -1,5 +1,7 @@
-﻿<div>
-    @Html.DropDownList("ddlCategories", new SelectList((IEnumerable<SelectListItem>)ViewData["GeneralBoardCategories"], "Value", "Text", ViewData["SelectedCategory"]), "ALL")
+﻿@model Test.Board.WebApp.Models.GeneralBoardDto
+
+<div>
+    @Html.DropDownListFor(x => x.SelectedItem, Model.Categories, "ALL")
 </div>
 
 <table class="table table-bordered">
@@ -14,11 +16,11 @@
     </thead>
 
     <tbody>
-        @foreach (var board in Model)
+        @foreach (var board in Model.generalBoards)
         {
             <tr>
                 <td>@board.Number</td>
-                <td>@board.Category</td>
+                <td>@board.CategoryName</td>
                 <td>
                     <a asp-controller="Board" asp-action="Detail" asp-route-No="@board.Number">@board.Title</a>
                 </td>
@@ -36,8 +38,8 @@
 
 <script>
     $(function(){
-        $('#ddlCategories').on('change', function(){
-            let selectedValue = $('#ddlCategories').find('option:selected').val();
+        $('#SelectedItem').on('change', function () {
+            let selectedValue = $('#SelectedItem').find('option:selected').val();
             let currentLocation = location.protocol + '//' + location.host;
 
             location.href = currentLocation + '/Board/List?CategoryId=' + selectedValue;
