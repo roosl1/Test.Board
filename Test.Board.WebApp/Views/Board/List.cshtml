@@ -1,7 +1,14 @@
-﻿<table class="table table-bordered">
+﻿@model Test.Board.WebApp.Models.GeneralBoardDto
+
+<div>
+    @Html.DropDownListFor(x => x.SelectedItem, Model.Categories, "ALL")
+</div>
+
+<table class="table table-bordered">
     <thead>
         <tr>
             <th>번호</th>
+            <th>카테고리</th>
             <th>제목</th>
             <th>작성자</th>
             <th>작성일</th>
@@ -9,10 +16,11 @@
     </thead>
 
     <tbody>
-        @foreach (var board in Model)
+        @foreach (var board in Model.generalBoards)
         {
             <tr>
                 <td>@board.Number</td>
+                <td>@board.CategoryName</td>
                 <td>
                     <a asp-controller="Board" asp-action="Detail" asp-route-No="@board.Number">@board.Title</a>
                 </td>
@@ -25,3 +33,16 @@
 </table>
 
 <div align="right"><a class="btn btn-danger" asp-controller="Board" asp-action="Write">작성</a></div>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+<script>
+    $(function(){
+        $('#SelectedItem').on('change', function () {
+            let selectedValue = $('#SelectedItem').find('option:selected').val();
+            let currentLocation = location.protocol + '//' + location.host;
+
+            location.href = currentLocation + '/Board/List?CategoryId=' + selectedValue;
+        });
+    });
+</script>

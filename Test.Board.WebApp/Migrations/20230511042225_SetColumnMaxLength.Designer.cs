@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Test.Board.WebApp.DataContext;
 
@@ -11,9 +12,11 @@ using Test.Board.WebApp.DataContext;
 namespace Test.Board.WebApp.Migrations
 {
     [DbContext(typeof(BoardDbContext))]
-    partial class BoardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230511042225_SetColumnMaxLength")]
+    partial class SetColumnMaxLength
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,6 +78,23 @@ namespace Test.Board.WebApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("BoardCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "유머"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "지식"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "기타"
+                        });
                 });
 #pragma warning restore 612, 618
         }

@@ -1,9 +1,17 @@
-﻿@model Test.Board.WebApp.Models.GeneralBoard
+﻿@model Test.Board.WebApp.Models.GeneralBoardDto
 
 <div class="row">
     <div class="col-lg-2"> </div>
     <div class="col-lg-8">
         <div class="text-danger" asp-validation-summary="ModelOnly"> </div>
+
+        <div class="form-group">
+            <label>카테고리</label>
+            <select asp-for="CategoryId" asp-items="@Model.selectListItems">
+                <option value="">ALL</option>
+            </select>
+            <span class="text-danger" asp-validation-for="CategoryId"></span>
+        </div>
 
         <div class="form-group">
             <label>작성자</label>
@@ -38,30 +46,36 @@
 <script>
 
     $(function () {
+        var categoryId = @Model.SelectedItem;
+        $("#CategoryId").val(categoryId);
+
         $('#actionEdit').on('click', function () {
             let number = $('#number').val();
             let writer = $('#writer').val();
             let title = $('#title').val();
             let contents = $('#contents').val();
+            let categoryId = $('#CategoryId').find('option:selected').val();
             let currentLocation = location.protocol + '//' + location.host;
 
             $.ajax({
-                //url: location.href + '/Board/Edit/' + number,
                 url: currentLocation + '/Board/Edit/',
                 data: {
                     'number': number,
                     'writer': writer,
                     'title': title,
-                    'contents': contents
+                    'contents': contents,
+                    'categoryId': categoryId
                 },
                 type: 'POST',
                 success: function (data) {
-                    debugger;
-                    if (data.result == 0) {
+                    if (data.result == 0 ) {
                         location.href = currentLocation + '/Board/Detail?No=' + number;
                     }
-                    else {
-                        alert('update fail');
+                    else if(data.result == -1) {
+                        $("span[data-valmsg-for='CategoryId']").text(data.msg);
+                    }
+                    else{
+                        alert("update fail");
                     }
                 },
                 error: function (error) {
